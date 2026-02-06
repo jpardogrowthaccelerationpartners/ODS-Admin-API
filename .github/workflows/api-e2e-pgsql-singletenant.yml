@@ -67,11 +67,11 @@ jobs:
 
       - name: Get Token and Set Variables
         run: |
-          bash './E2E Tests/V2/Bruno Admin API E2E refactor/get_token.sh'
+          bash './E2E Tests/V2/Bruno Admin API E2E 2.0 refactor/get_token.sh'
 
       - name: Run Tests
         run: |
-          cd './E2E Tests/V2/Bruno Admin API E2E refactor/'
+          cd './E2E Tests/V2/Bruno Admin API E2E 2.0 refactor/'
           npx @usebruno/cli@latest run --env local --sandbox=developer \
           --insecure 'v2/' \
           --reporter-html ./results.html --reporter-junit ./report.xml
@@ -96,7 +96,7 @@ jobs:
         if: success() || failure()
         with:
           name: test-html-results
-          path: Application/EdFi.Ods.AdminApi/E2E Tests/V2/Bruno Admin API E2E refactor/results.html
+          path: Application/EdFi.Ods.AdminApi/E2E Tests/V2/Bruno Admin API E2E 2.0 refactor/results.html
           retention-days: 5
 
       - name: Upload xml results
@@ -104,7 +104,7 @@ jobs:
         if: success() || failure()
         with:
           name: test-xml-results
-          path: Application/EdFi.Ods.AdminApi/E2E Tests/V2/Bruno Admin API E2E refactor/report.xml
+          path: Application/EdFi.Ods.AdminApi/E2E Tests/V2/Bruno Admin API E2E 2.0 refactor/report.xml
           retention-days: 5
 
   report:
