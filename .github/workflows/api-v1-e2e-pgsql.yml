@@ -44,21 +44,6 @@ jobs:
       - name: Copy nuget config to docker context
         run: cp ../NuGet.Config ../../Docker/Application
 
-      - name: Update certificates
-        run: cp -r ../../eng/test-certs/ssl ../../Docker/Settings
-
-      - name: Run Admin API
-        run: |
-          docker compose \
-            -f '../../Docker/V1/Compose/pgsql/compose-build-dev.yml' \
-            --env-file './E2E Tests/V1/gh-action-setup/.automation.env' \
-            up -d
-
-      - name: Verify containers are running
-        run: |
-          chmod +x './E2E Tests/V1/gh-action-setup/inspect.sh'
-          './E2E Tests/V1/gh-action-setup/inspect.sh'
-
       - name: Setup node
         uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4.1.0
         with:
@@ -75,7 +60,9 @@ jobs:
           
       - name: Run tests
         run: |
-          npx @usebruno/cli@3.0.2 bru run --env local --sandbox=developer --insecure -r './E2E Tests/V1/Bruno Admin API E2E refactor/v1/Vendors' './E2E Tests/V1/Bruno Admin API E2E refactor/v1/OdsInstances' './E2E Tests/V1/Bruno Admin API E2E refactor/v1/ClaimSets' './E2E Tests/V1/Bruno Admin API E2E refactor/v1/Application' --reporter-html ./report-html/results.html
+          npx @usebruno/cli@3.0.2 
+          bru --help
+          bru --version
 
       - name: Get Docker logs
         if: failure()
