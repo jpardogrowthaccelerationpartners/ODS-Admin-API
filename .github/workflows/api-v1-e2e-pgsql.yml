@@ -33,7 +33,7 @@ jobs:
       run:
         working-directory: ./Application/EdFi.Ods.AdminApi/
 
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
       - name: Copy application folder to docker context
@@ -64,10 +64,6 @@ jobs:
         with:
           node-version: "20"
 
-      - name: Wait 5s
-        # Give Azure Artifacts caching a moment to catch up
-        run: sleep 5
-
       - name: Get Token and set Variables
         run: |
           bash './E2E Tests/V1/Bruno Admin API E2E refactor/get_token.sh'
@@ -75,7 +71,7 @@ jobs:
       - name: Run tests
         run: |
           cd './E2E Tests/V1/Bruno Admin API E2E refactor/'
-          npx @usebruno/cli@latest run --env local --sandbox=developer --insecure 'v1/Vendors' 'v1/OdsInstances' 'v1/ClaimSets' 'v1/Application' -r --reporter-html './report-html/results.html'
+          npx @usebruno/cli@latest run --env local --sandbox=developer --insecure 'v1/Vendors' 'v1/OdsInstances' 'v1/ClaimSets' 'v1/Application' -r --reporter-html results.html
             
       - name: Get Docker logs
         if: failure()
@@ -98,7 +94,7 @@ jobs:
         if: success() || failure()
         with:
           name: test-html-results
-          path: Application/EdFi.Ods.AdminApi/report-html/results.html
+          path: Application/EdFi.Ods.AdminApi/E2E Tests/V1/Bruno Admin API E2E refactor/results.html
           retention-days: 10
 
       - name: Upload xml results
