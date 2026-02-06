@@ -52,11 +52,6 @@ jobs:
       - name: Wait 10s
         # Give Azure Artifacts caching a moment to catch up
         run: sleep 10
-        
-      - name: Get Token and set Variables
-        run: |
-          chmod +x './E2E Tests/V1/Bruno Admin API E2E refactor/get_token.sh'
-          bash './E2E Tests/V1/Bruno Admin API E2E refactor/get_token.sh'
           
       - name: Run tests
         run: |
