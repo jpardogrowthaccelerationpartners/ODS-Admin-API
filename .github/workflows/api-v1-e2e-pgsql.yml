@@ -71,7 +71,7 @@ jobs:
       - name: Get Token and set Variables
         run: |
           chmod +x './E2E Tests/V1/Bruno Admin API E2E refactor/get_token.sh'
-          sh './E2E Tests/V1/Bruno Admin API E2E refactor/get_token.sh'
+          bash './E2E Tests/V1/Bruno Admin API E2E refactor/get_token.sh'
           
       - name: Run tests
         run: |
