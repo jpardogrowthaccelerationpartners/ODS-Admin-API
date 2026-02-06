@@ -73,7 +73,7 @@ jobs:
           cd './E2E Tests/V1/Bruno Admin API E2E refactor/'
           npx @usebruno/cli@latest run --env local --sandbox=developer \
           --insecure 'v1/Vendors' 'v1/OdsInstances' 'v1/ClaimSets' 'v1/Application' \
-          --reporter-html ./../../../report/results.html --reporter-junit ./../../../report/report.xml 
+          --reporter-html ./results.html --reporter-junit ./report.xml 
             
       - name: Get Docker logs
         if: failure()
@@ -96,7 +96,7 @@ jobs:
         if: success() || failure()
         with:
           name: test-html-results
-          path: Application/EdFi.Ods.AdminApi/report/results.html
+          path: Application/EdFi.Ods.AdminApi/E2E Tests/V1/Bruno Admin API E2E refactor/results.html
           retention-days: 10
 
       - name: Upload xml results
@@ -104,7 +104,7 @@ jobs:
         if: success() || failure()
         with:
           name: test-results
-          path: Application/EdFi.Ods.AdminApi/report/report.xml
+          path: Application/EdFi.Ods.AdminApi/E2E Tests/V1/Bruno Admin API E2E refactor/report.xml
           retention-days: 10
 
   report:
