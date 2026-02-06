@@ -44,19 +44,38 @@ jobs:
       - name: Copy nuget config to docker context
         run: cp ../NuGet.Config ../../Docker/Application
 
+      - name: Update certificates
+        run: cp -r ../../eng/test-certs/ssl ../../Docker/Settings
+
+      - name: Run Admin API
+        run: |
+          docker compose \
+            -f '../../Docker/V1/Compose/pgsql/compose-build-dev.yml' \
+            --env-file './E2E Tests/V1/gh-action-setup/.automation.env' \
+            up -d
+
+      - name: Verify containers are running
+        run: |
+          chmod +x './E2E Tests/V1/gh-action-setup/inspect.sh'
+          './E2E Tests/V1/gh-action-setup/inspect.sh'
+
       - name: Setup node
         uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4.1.0
         with:
           node-version: "20"
-          
-      - name: Wait 10s
+
+      - name: Wait 5s
         # Give Azure Artifacts caching a moment to catch up
-        run: sleep 10
-          
+        run: sleep 5
+
+      - name: Get Token and set Variables
+        run: |
+          bash './E2E Tests/V1/Bruno Admin API E2E refactor/get_token.sh'
+
       - name: Run tests
         run: |
-          bru run --env local --sandbox=developer --insecure './E2E Tests/V1/Bruno Admin API E2E refactor/v1/Vendors' './E2E Tests/V1/Bruno Admin API E2E refactor/v1/OdsInstances' './E2E Tests/V1/Bruno Admin API E2E refactor/v1/ClaimSets' './E2E Tests/V1/Bruno Admin API E2E refactor/v1/Application' -r --reporter-html './report-html/results.html'
-
+          npx @usebruno/cli@latest bru run --env local --sandbox=developer --insecure './E2E Tests/V1/Bruno Admin API E2E refactor/v1/Vendors' './E2E Tests/V1/Bruno Admin API E2E refactor/v1/OdsInstances' './E2E Tests/V1/Bruno Admin API E2E refactor/v1/ClaimSets' './E2E Tests/V1/Bruno Admin API E2E refactor/v1/Application' -r --reporter-html './report-html/results.html'
+            
       - name: Get Docker logs
         if: failure()
         run: |
