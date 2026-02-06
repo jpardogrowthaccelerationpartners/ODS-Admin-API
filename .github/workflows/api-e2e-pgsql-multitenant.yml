@@ -71,7 +71,7 @@ jobs:
 
       - name: Get Token and Set Variables
         run: |
-          bash './E2E Tests/V2/Bruno Admin API E2E 2.0 refactor/get_token.sh multitenant pgsql'
+          bash './E2E Tests/V2/Bruno Admin API E2E 2.0 refactor/get_token.sh' multitenant pgsql
 
       - name: Run Tests
         run: |
