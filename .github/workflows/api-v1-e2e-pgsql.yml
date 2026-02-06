@@ -74,7 +74,7 @@ jobs:
 
       - name: Run tests
         run: |
-          npx @usebruno/cli@latest bru run --env local --sandbox=developer --insecure './E2E Tests/V1/Bruno Admin API E2E refactor/v1/Vendors' './E2E Tests/V1/Bruno Admin API E2E refactor/v1/OdsInstances' './E2E Tests/V1/Bruno Admin API E2E refactor/v1/ClaimSets' './E2E Tests/V1/Bruno Admin API E2E refactor/v1/Application' -r --reporter-html './report-html/results.html'
+          npx @usebruno/cli@latest -- bru run --env local --sandbox=developer --insecure './E2E Tests/V1/Bruno Admin API E2E refactor/v1/Vendors' './E2E Tests/V1/Bruno Admin API E2E refactor/v1/OdsInstances' './E2E Tests/V1/Bruno Admin API E2E refactor/v1/ClaimSets' './E2E Tests/V1/Bruno Admin API E2E refactor/v1/Application' -r --reporter-html './report-html/results.html'
             
       - name: Get Docker logs
         if: failure()
