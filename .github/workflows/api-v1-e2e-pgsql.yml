@@ -64,13 +64,13 @@ jobs:
         with:
           node-version: "20"
 
+      - name: Get Token and set Variables
+        run: |
+          sh './E2E Tests/V1/Bruno Admin API E2E refactor/get_token.sh'
+          
       - name: Run tests
         run: |
-          npx @usebruno/cli@3.0.2 bru run --env local --sandbox=developer --insecure \
-            -r './E2E Tests/V1/Bruno Admin API E2E refactor/v1/Vendors' \
-            './E2E Tests/V1/Bruno Admin API E2E refactor/v1/OdsInstances' \
-            './E2E Tests/V1/Bruno Admin API E2E refactor/v1/ClaimSets' \
-            './E2E Tests/V1/Bruno Admin API E2E refactor/v1/Application' --reporter-html ./report-html/results.html
+          npx @usebruno/cli@3.0.2 bru run --env local --sandbox=developer --insecure -r './E2E Tests/V1/Bruno Admin API E2E refactor/v1/Vendors' './E2E Tests/V1/Bruno Admin API E2E refactor/v1/OdsInstances' './E2E Tests/V1/Bruno Admin API E2E refactor/v1/ClaimSets' './E2E Tests/V1/Bruno Admin API E2E refactor/v1/Application' --reporter-html ./report-html/results.html
 
       - name: Get Docker logs
         if: failure()
