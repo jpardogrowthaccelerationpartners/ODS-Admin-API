@@ -55,9 +55,7 @@ jobs:
           
       - name: Run tests
         run: |
-          npx @usebruno/cli@3.0.2 /
-          bru --help /
-          bru --version
+          npx @usebruno/cli@3.0.2 bru --help bru --version
 
       - name: Get Docker logs
         if: failure()
