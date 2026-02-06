@@ -77,7 +77,7 @@ jobs:
         run: |
           cd './E2E Tests/V2/Bruno Admin API E2E 2.0 refactor/'
           npx @usebruno/cli@latest run --env local --sandbox=developer \
-          --insecure 'v2/' \
+          --insecure -r 'v2/' \
           --reporter-html ./results.html --reporter-junit ./report.xml
 
       - name: Get Docker logs
