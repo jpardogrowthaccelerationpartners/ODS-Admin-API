@@ -1,0 +1,153 @@
+# SPDX-License-Identifier: Apache-2.0
+# Licensed to the Ed-Fi Alliance under one or more agreements.
+# The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
+# See the LICENSE and NOTICES files in the project root for more information.
+
+name: Manual Docker Push
+on:
+  workflow_dispatch:
+    inputs:
+      docker_tag:
+        description: 'Docker tag to use (e.g., test, dev, feature-branch, etc.)'
+        required: true
+        type: string
+      admin_api_version:
+        description: 'Admin API version to use in build args'
+        required: true
+        type: string
+        default: '2.3.1'
+      build_database_images:
+        description: 'Also build and push database images'
+        required: false
+        type: boolean
+        default: true
+      platforms:
+        description: 'Target platforms for build'
+        required: false
+        type: string
+        default: 'linux/amd64,linux/arm64'
+
+env:
+  IMAGE_NAME: ${{ vars.IMAGE_NAME }}
+  DATABASE_IMAGE_NAME: ${{ vars.DATABASE_IMAGE_NAME }}
+  DOCKER_USERNAME: ${{ vars.DOCKER_USERNAME }}
+  DOCKER_HUB_TOKEN: ${{ secrets.DOCKER_HUB_TOKEN }}
+
+permissions: read-all
+
+jobs:
+  manual-docker-push:
+    name: Manual Docker Push
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate inputs
+        run: |
+          if [[ "${{ inputs.docker_tag }}" =~ ^(latest|pre|v[0-9]+\.[0-9]+(\.[0-9]+)?(-[a-zA-Z0-9]+)?)$ ]]; then
+            echo "⚠️  Warning: You are using a reserved tag pattern: ${{ inputs.docker_tag }}"
+            echo "Reserved patterns include: latest, pre, v*.*.* (version tags)"
+            echo "Consider using a custom tag like 'test', 'dev', 'feature-xyz', etc."
+          fi
+          echo "Using tag: ${{ inputs.docker_tag }}"
+          echo "Admin API Version: ${{ inputs.admin_api_version }}"
+          echo "Build database images: ${{ inputs.build_database_images }}"
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@9780b0c442fbb1117ed29e0efdff1e18412f7567  # v3.3.0
+        with:
+          username: ${{ env.DOCKER_USERNAME }}
+          password: ${{ env.DOCKER_HUB_TOKEN }}
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@c7c53464625b32c7a7e944ae62b3e17d2b600130 # v3.7.0
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@6524bf65af31da8d45b59e8c27de4bd072b392f5  # v3.8.0
+
+      - name: Extract metadata (tags, labels) for admin api image
+        id: metaapi
+        uses: docker/metadata-action@369eb591f429131d6889c46b94e711f089e6ca96  # v5.6.1
+        with:
+          images: ${{ env.IMAGE_NAME }}
+          tags: |
+            type=raw,value=${{ inputs.docker_tag }}
+
+      - name: Build and push admin api image
+        uses: docker/build-push-action@b32b51a8eda65d6793cd0494a773d4f6bcef32dc  # v6.11.0
+        with:
+          context: "{{defaultContext}}:Docker"
+          cache-from: type=registry,ref=${{ env.IMAGE_NAME }}:${{ inputs.docker_tag }}
+          cache-to: type=inline
+          platforms: ${{ inputs.platforms }}
+          build-args: |
+            VERSION=${{ inputs.admin_api_version }}
+            ADMIN_API_VERSION=${{ inputs.admin_api_version }}
+          file: api.pgsql.Dockerfile
+          tags: ${{ env.IMAGE_NAME }}:${{ inputs.docker_tag }}
+          labels: ${{ steps.metaapi.outputs.labels }}
+          push: true
+
+      - name: Extract metadata (tags, labels) for admin api database image
+        if: ${{ inputs.build_database_images }}
+        id: metadatabase
+        uses: docker/metadata-action@369eb591f429131d6889c46b94e711f089e6ca96  # v5.6.1
+        with:
+          images: ${{ env.DATABASE_IMAGE_NAME }}
+          tags: |
+            type=raw,value=${{ inputs.docker_tag }}
+
+      - name: Build and push admin api database image 7.x
+        if: ${{ inputs.build_database_images }}
+        uses: docker/build-push-action@b32b51a8eda65d6793cd0494a773d4f6bcef32dc  # v6.11.0
+        with:
+          context: "{{defaultContext}}:Docker/Settings/V2/DB-Admin/pgsql"
+          cache-from: type=registry,ref=${{ env.DATABASE_IMAGE_NAME }}:${{ inputs.docker_tag }}
+          cache-to: type=inline
+          platforms: ${{ inputs.platforms }}
+          build-args: ADMIN_API_VERSION=${{ inputs.admin_api_version }}
+          file: Dockerfile
+          tags: ${{ env.DATABASE_IMAGE_NAME }}:${{ inputs.docker_tag }}
+          labels: ${{ steps.metadatabase.outputs.labels }}
+          push: true
+
+      - name: Build and push admin api database image 6.x
+        if: ${{ inputs.build_database_images }}
+        uses: docker/build-push-action@b32b51a8eda65d6793cd0494a773d4f6bcef32dc  # v6.11.0
+        with:
+          context: "{{defaultContext}}:Docker/Settings/V1/DB-Admin/pgsql"
+          cache-from: type=registry,ref=${{ env.DATABASE_IMAGE_NAME }}:${{ inputs.docker_tag }}-6.2
+          cache-to: type=inline
+          platforms: ${{ inputs.platforms }}
+          build-args: ADMIN_API_VERSION=${{ inputs.admin_api_version }}
+          file: Dockerfile
+          tags: ${{ env.DATABASE_IMAGE_NAME }}:${{ inputs.docker_tag }}-6.2
+          labels: ${{ steps.metadatabase.outputs.labels }}
+          push: true
+
+      - name: Summary
+        run: |
+          echo "## 🚀 Docker Images Published" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Admin API Image" >> $GITHUB_STEP_SUMMARY
+          echo "- **Image:** \`${{ env.IMAGE_NAME }}:${{ inputs.docker_tag }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- **Version:** ${{ inputs.admin_api_version }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Platforms:** ${{ inputs.platforms }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          if [[ "${{ inputs.build_database_images }}" == "true" ]]; then
+            echo "### Database Images" >> $GITHUB_STEP_SUMMARY
+            echo "- **7.x:** \`${{ env.DATABASE_IMAGE_NAME }}:${{ inputs.docker_tag }}\`" >> $GITHUB_STEP_SUMMARY
+            echo "- **6.x:** \`${{ env.DATABASE_IMAGE_NAME }}:${{ inputs.docker_tag }}-6.2\`" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          echo "### Usage" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`bash" >> $GITHUB_STEP_SUMMARY
+          echo "# Pull the admin api image" >> $GITHUB_STEP_SUMMARY
+          echo "docker pull ${{ env.IMAGE_NAME }}:${{ inputs.docker_tag }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          if [[ "${{ inputs.build_database_images }}" == "true" ]]; then
+            echo "# Pull the database images" >> $GITHUB_STEP_SUMMARY
+            echo "docker pull ${{ env.DATABASE_IMAGE_NAME }}:${{ inputs.docker_tag }}" >> $GITHUB_STEP_SUMMARY
+            echo "docker pull ${{ env.DATABASE_IMAGE_NAME }}:${{ inputs.docker_tag }}-6.2" >> $GITHUB_STEP_SUMMARY
+          fi
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
