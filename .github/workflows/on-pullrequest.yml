@@ -42,21 +42,13 @@ jobs:
       - name: Checkout the Repo
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
-      - name: Install actionlint
-        run: |
-          ACTIONLINT_VERSION=1.7.7
-          curl -sL "https://github.com/rhysd/actionlint/releases/download/v${ACTIONLINT_VERSION}/actionlint_${ACTIONLINT_VERSION}_linux_amd64.tar.gz" \
-            | tar xz actionlint
-          sudo mv actionlint /usr/local/bin/
-
       - name: Run actionlint
-        run: actionlint -color
-
-      - name: Install yamllint
-        run: pip install yamllint==1.35.1
+        uses: rhysd/actionlint@03d0035246f3e81f36aed592ffb4bebf33a03106 # v1.7.7
 
       - name: Run yamllint
-        run: yamllint .github/workflows/
+        uses: ibiqlik/action-yamllint@2576378a8e339169678f9939646ee3ee325e845c # v3.1.1
+        with:
+          file_or_dir: .github/workflows/
 
   run-cs-tests:
     name: Run C# Tests
