@@ -46,7 +46,7 @@ jobs:
         uses: rhysd/actionlint@03d0035246f3e81f36aed592ffb4bebf33a03106 # v1.7.7
 
       - name: Run yamllint
-        uses: ibiqlik/action-yamllint@2576378a8e339169678f9939646ee3ee325e845c # v3.1.1
+        uses: adrienverge/yamllint@cba56bcde1fdd01c1deb3f945e69764c291a6530 # v1.38.0
         with:
           file_or_dir: .github/workflows/
 
