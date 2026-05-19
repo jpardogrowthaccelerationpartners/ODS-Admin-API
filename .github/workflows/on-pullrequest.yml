@@ -35,8 +35,32 @@ jobs:
     with:
       config-file-path: ./.github/workflows/bidi-config.json
 
+  run-linting:
+    name: Lint Workflows and YAML
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout the Repo
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+
+      - name: Install actionlint
+        run: |
+          ACTIONLINT_VERSION=1.7.7
+          curl -sL "https://github.com/rhysd/actionlint/releases/download/v${ACTIONLINT_VERSION}/actionlint_${ACTIONLINT_VERSION}_linux_amd64.tar.gz" \
+            | tar xz actionlint
+          sudo mv actionlint /usr/local/bin/
+
+      - name: Run actionlint
+        run: actionlint -color
+
+      - name: Install yamllint
+        run: pip install yamllint==1.35.1
+
+      - name: Run yamllint
+        run: yamllint .github/workflows/
+
   run-cs-tests:
     name: Run C# Tests
+    needs: run-linting
     runs-on: ubuntu-latest
     defaults:
       run:
